@@ -1,0 +1,6 @@
+#IGNORE
+/blueprints/static/music/
+blueprints/static/music/
+ *.mp3
+ *.m4a
+
