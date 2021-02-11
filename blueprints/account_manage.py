@@ -29,11 +29,11 @@ def token_required(function):
             print("\ncurrent_user",current_user,"\n")
         except:
             return jsonify({'message' : 'Token is invalid!!'}), 401
-        print("\nvalid\n")
+        print("\ncurrent_user",current_user,"\n")
         return function(current_user, *args, **kwargs)
     return decorated
 
-@account_manage.route('user',methods=['POST'])
+@account_manage.route('/user',methods=['POST'])
 @token_required
 def creat_user(current_user):
     if not current_user.admin:
@@ -44,6 +44,8 @@ def creat_user(current_user):
     #hashed_password = generate_password_hash("admin",method='sha256')
     new_user = User(public_id=str(uuid.uuid4()), name=data['name'],email=data['email'], password=hashed_password, admin=False)
     #new_user = User(public_id=str(uuid.uuid4()), name="admin",email="admin@admin", password=hashed_password, admin=True)
+    if User.query.filter_by(email=new_user.email).first():
+        return jsonify({'message':'email allready in Use'})
     db.session.add(new_user)
     db.session.commit()
     return jsonify({'message ':'new user created'})
@@ -62,3 +64,4 @@ def login():
         return jsonify({'token' : token})#token eigentlich utf-8
 
     return make_response('Could not verify', 401, {'WWW-Authenticate' : 'Basic realm="Login required!"'})
+
