@@ -18,7 +18,6 @@ def token_required(function):
             #token = request.headers['x-access-token']
             token = request.headers['Authorization']
             token = token.split(" ")[1]
-            print(token)
         if not token:
             return jsonify({'message' : 'Token is missing!'}), 401
         try:
@@ -29,7 +28,6 @@ def token_required(function):
             print("\ncurrent_user",current_user,"\n")
         except:
             return jsonify({'message' : 'Token is invalid!!'}), 401
-        print("\ncurrent_user",current_user,"\n")
         return function(current_user, *args, **kwargs)
     return decorated
 
@@ -62,6 +60,62 @@ def login():
         token = jwt.encode({'public_id' : user.public_id, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=30)}, current_app.config['SECRET_KEY'])
         print("\n","vaalide""\n")
         return jsonify({'token' : token})#token eigentlich utf-8
-
     return make_response('Could not verify', 401, {'WWW-Authenticate' : 'Basic realm="Login required!"'})
 
+@account_manage.route('/logout')
+@token_required
+def logout(current_user):
+    return jsonify({'message' : 'nope'})
+
+
+
+@account_manage.route('/user', methods=['GET'])
+@token_required
+def get_all_users(current_user):
+    if not current_user.admin:
+        return jsonify({'message' : 'Cannot perform that function!'})
+    users = User.query.all()
+    output = []
+    for user in users:
+        user_data = {}
+        user_data['password'] = user.password
+        user_data['admin'] = user.admin
+        user_data['name'] = user.name
+        user_data['email'] = user.email
+        user_data['public_id'] = user.public_id
+        output.append(user_data)
+    print("\nuser: ",output,"\n")
+    return jsonify({'users' : output})
+
+@account_manage.route('/user/<public_id>', methods=['PUT'])
+@token_required
+def change_admin(current_user, public_id):
+    if not current_user.admin:
+        return jsonify({'message' : 'Cannot perform that function!'})
+    user = User.query.filter_by(public_id=public_id).first()
+    if current_user.id == user.id:
+        return jsonify({'message' : 'Cannot change yourself'})
+    if not user:
+        return jsonify({'message' : 'No user found!'})
+    if user.admin == False:
+        user.admin = True
+        db.session.commit()
+        return jsonify({'message': 'The user has been promoted! admin: '+str(user.admin)})
+    else:
+        user.admin = False
+        db.session.commit()
+    return jsonify({'message' : 'The user has been demoted! admin: '+str(user.admin)})
+
+@account_manage.route('/user/<public_id>', methods=['DELETE'])
+@token_required
+def delete_user(current_user, public_id):
+    if not current_user.admin:
+        return jsonify({'message' : 'Cannot perform that function!'})
+    user = User.query.filter_by(public_id=public_id).first()
+    if not user:
+        return jsonify({'message' : 'No user found!'})
+    if user.admin == True:
+        return jsonify({'message' : 'cant_delete_admin!'})
+    db.session.delete(user)
+    db.session.commit()
+    return jsonify({'message' : 'The user has been deleted!'})

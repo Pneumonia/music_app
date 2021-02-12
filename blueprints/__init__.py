@@ -16,6 +16,10 @@ def create_app():
     app.config['MAX_MUSIC_LENGTH'] = 20 * 1024 * 1024#max file size(20mb)
     app.config['UPLOAD_EXTENSIONS'] = ["MP3", "AAC", "M4A", "WMA", "FLAC", "ALAC", "WAV", "AIFF", "PCM", "OGG"]
     app.config['MAX_CONTENT_LENGTH'] = 20 * 1024 * 1024#max file size for all data trafic
+    app.config['JWT_BLACKLIST_ENABLED'] = True
+    app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
+
+
 
     db.init_app(app)
 

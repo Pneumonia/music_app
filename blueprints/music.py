@@ -2,13 +2,11 @@ from flask import Flask, Blueprint, jsonify, Response, request, current_app
 from .account_manage import token_required
 import logging
 from pydub import AudioSegment
-from pydub.playback import _play_with_simpleaudio
 import os as os
 from . import db
 from .models import Music
 from werkzeug.utils import secure_filename
-import shutil as sh
-
+import simpleaudio
 music = Blueprint("music", __name__)
 
 
@@ -29,13 +27,12 @@ def music_refresh(current_user):
             db.session.add(new_music)
             db.session.commit()
     test = Music.query.all()
-    for t in test:
-        print("\n", t.title)
-        print(t.format)
-        print(t.link)
-        print(t.user_id, "\n")
+    # for t in test:
+    #     print("\n", t.title)
+    #     print(t.format)
+    #     print(t.link)
+    #     print(t.user_id, "\n")
     return jsonify({'message': 'music refreshed'})
-
 
 @music.route('/static/music/<music>')
 @token_required
@@ -62,15 +59,16 @@ def play_on_lokal(current_user, music):
 @music.route('/static/music/<music>', methods=["POST"])
 @token_required
 def play_on_host(current_user, music):
+    simpleaudio.stop_all()
     music_refresh(current_user)
     music = Music.query.filter_by(title=music.split(".")[0]).first()
     print("\n", music, "\n")
     if not music:
         return jsonify({'message': 'data is empty'})
-    music = music.link
+    simpleaudio.stop_all()
     try:
-        play = _play_with_simpleaudio(AudioSegment.from_file(music))
-        print("\n", play, "\n")
+        music = AudioSegment.from_file(music.link)
+        simpleaudio.play_buffer(music.raw_data,num_channels=music.channels,bytes_per_sample=music.sample_width,sample_rate=music.frame_rate)
         return jsonify({'message': 'music is playing'})
     except:
         return jsonify({'message', 'error'})
@@ -85,7 +83,7 @@ def upload_music(current_user):
         if music and music.filename != "":
             if music.filename.upper().split(".")[1] in current_app.config['UPLOAD_EXTENSIONS']:
                 sec_filename = secure_filename(music.filename).lower()
-                print("\nsecure_name ", sec_filename," ",music, "\n")
+                print("\n",dir(music), "\n")
                 music.save(os.path.join(current_app.config['MUSIC_UPLOAD'], sec_filename))
                 music_refresh(current_user)
                 return jsonify({'message': 'file uploaded'})
@@ -94,6 +92,8 @@ def upload_music(current_user):
 @music.route('/static/music/<music>',methods=["DELETE"])
 @token_required
 def delete_music(current_user,music):
+    if current_user.admin != True:
+        return jsonify({'message':'not admin, cant delet'})
     music = Music.query.filter_by(title=music.split(".")[0]).first()
     if music:
         os.system("rm "+music.link)
