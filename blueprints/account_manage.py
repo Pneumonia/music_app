@@ -9,17 +9,18 @@ import uuid
 
 account_manage=Blueprint("account_manage",__name__)
 
+
 def token_required(function):
     @wraps(function)
     def decorated(*args, **kwargs):
         token = None
-        #if 'x-access-token' in request.headers:
         if 'Authorization' in request.headers:
-            #token = request.headers['x-access-token']
             token = request.headers['Authorization']
             token = token.split(" ")[1]
         if not token:
             return jsonify({'message' : 'Token is missing!'}), 401
+        if token in current_app.blacklist:
+            return jsonify({'message' : 'Token is loged out!'}), 401
         try:
             print("\ntokken", token, "\n")
             data = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=["HS256"])#decode braucht algorithems=[""]
@@ -59,15 +60,18 @@ def login():
     if check_password_hash(user.password, auth.password):
         token = jwt.encode({'public_id' : user.public_id, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=30)}, current_app.config['SECRET_KEY'])
         print("\n","vaalide""\n")
-        return jsonify({'token' : token})#token eigentlich utf-8
+        print(type(token))
+        print(token)
+        return jsonify({'token' : token})#token eigentlich utf-8 .decode('UTF-8')
     return make_response('Could not verify', 401, {'WWW-Authenticate' : 'Basic realm="Login required!"'})
 
 @account_manage.route('/logout')
 @token_required
 def logout(current_user):
-    return jsonify({'message' : 'nope'})
-
-
+    token = request.headers['Authorization']
+    token = token.split(" ")[1]
+    current_app.blacklist.add(token)
+    return jsonify({'message' : current_user.name+' loged out'})
 
 @account_manage.route('/user', methods=['GET'])
 @token_required

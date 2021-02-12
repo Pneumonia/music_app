@@ -37,6 +37,7 @@ def music_refresh(current_user):
 @music.route('/static/music/<music>')
 @token_required
 def play_on_lokal(current_user, music):
+    print("\n",music,"\n")
     def generator(music):
         count = 1
         with open(music, "rb") as fwav:
@@ -51,6 +52,7 @@ def play_on_lokal(current_user, music):
     music = Music.query.filter_by(title=music.split(".")[0]).first()
     if music:
         music = music.link
+        print("\n", music, "\n")
         return Response(generator(music), mimetype="audio/mp3")
     else:
         return jsonify({'message': 'music not in libary'})
