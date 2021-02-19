@@ -10,7 +10,7 @@ class Note(db.Model):
 
 class Music(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(150),unique=True)
+    title = db.Column(db.String(150))
     format = db.Column(db.String(150))
     link = db.Column(db.String(150),unique=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.public_id'))
@@ -20,6 +20,6 @@ class User(db.Model,UserMixin):
     public_id = db.Column(db.String(50),unique=True)
     email = db.Column(db.String(150),unique=True)
     password = db.Column(db.String(150))
-    name = db.Column(db.String(150))
+    name = db.Column(db.String(150),unique=True)
     admin = db.Column(db.Boolean)
     notes = db.relationship('Note')

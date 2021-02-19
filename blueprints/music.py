@@ -1,12 +1,13 @@
-from flask import Flask, Blueprint, jsonify, Response, request, current_app
-from .account_manage import token_required
+from flask import Flask, Blueprint, jsonify, Response, request, current_app, make_response
 import logging
 from pydub import AudioSegment
 import os as os
 from . import db
 from .models import Music
 from werkzeug.utils import secure_filename
+from .models import User
 import simpleaudio
+from flask_jwt_extended import jwt_required,get_jwt_identity
 music = Blueprint("music", __name__)
 
 
@@ -35,8 +36,12 @@ def music_refresh(current_user):
     return jsonify({'message': 'music refreshed'})
 
 @music.route('/static/music/<music>')
-@token_required
-def play_on_lokal(current_user, music):
+@jwt_required
+def play_on_lokal(music):
+    test = request.headers
+    print("\ntest: ",test,"\n")
+    current_user = get_jwt_identity()
+    current_user = User.query.filter_by(public_id=current_user).first()
     print("\n",music,"\n")
     def generator(music):
         count = 1
@@ -47,7 +52,6 @@ def play_on_lokal(current_user, music):
                 data = fwav.read(1024)
                 logging.debug('Music data fragment : ' + str(count))
                 count += 1
-
     music_refresh(current_user)
     music = Music.query.filter_by(title=music.split(".")[0]).first()
     if music:
@@ -59,8 +63,13 @@ def play_on_lokal(current_user, music):
 
 
 @music.route('/static/music/<music>', methods=["POST"])
-@token_required
-def play_on_host(current_user, music):
+@jwt_required
+def play_on_host(music):
+    test = request.headers
+    print("\ntest: ", test, "\n")
+    print("\nplay on host\n")
+    current_user = get_jwt_identity()
+    current_user = User.query.filter_by(public_id=current_user).first()
     simpleaudio.stop_all()
     music_refresh(current_user)
     music = Music.query.filter_by(title=music.split(".")[0]).first()
@@ -78,22 +87,36 @@ def play_on_host(current_user, music):
 
 
 @music.route("/upload_music", methods=["POST"])
-@token_required
-def upload_music(current_user):
-    if request.method == "POST" and request.files["music"]:
-        music = request.files["music"]
-        if music and music.filename != "":
-            if music.filename.upper().split(".")[1] in current_app.config['UPLOAD_EXTENSIONS']:
-                sec_filename = secure_filename(music.filename).lower()
-                print("\n",dir(music), "\n")
-                music.save(os.path.join(current_app.config['MUSIC_UPLOAD'], sec_filename))
-                music_refresh(current_user)
-                return jsonify({'message': 'file uploaded'})
-    return jsonify({'message': 'failed'})
+@jwt_required
+def upload_music():
+    print("\nupload_music\n")
+    current_user = get_jwt_identity()
+    current_user = User.query.filter_by(public_id=current_user).first()
+    if request.method != "POST":
+        print("\nnot_post\n")
+        return jsonify({'message': 'failed'})
+    if not request.files['music']:
+        print("\nno requestt\n")
+        return jsonify({'message': 'failed'})
+    music = request.files['music']
+    if not music:
+        print("\nno file\n")
+        return jsonify({'message': 'failed'})
+    if music.filename == "":
+        print("\nno filename\n")
+        return jsonify({'message': 'failed'})
+    if music.filename.upper().split(".")[1] not in current_app.config['UPLOAD_EXTENSIONS']:
+        return jsonify({'message': 'failed'})
+    sec_filename = secure_filename(music.filename).lower()
+    music.save(os.path.join(current_app.config['MUSIC_UPLOAD'], sec_filename))
+    music_refresh(current_user)
+    return jsonify({'message': 'file uploaded'})
 
 @music.route('/static/music/<music>',methods=["DELETE"])
-@token_required
-def delete_music(current_user,music):
+@jwt_required
+def delete_music(music):
+    current_user = get_jwt_identity()
+    current_user = User.query.filter_by(public_id=current_user).first()
     if current_user.admin != True:
         return jsonify({'message':'not admin, cant delet'})
     music = Music.query.filter_by(title=music.split(".")[0]).first()
@@ -104,3 +127,19 @@ def delete_music(current_user,music):
         return jsonify({'message':'deleted'})
 
     return jsonify({'message':'not deleteed'})
+
+@music.route('/get_music',methods=["POST"])
+@jwt_required
+def get_music():
+    music = Music.query.all()
+    music_info = []
+    for m in music:
+        music_info += [m.title +"."+m.format]
+    print(music_info)
+    return make_response(jsonify({'music_info':music_info}),200)
+
+@music.route('/stop_music',methods=["POST"])
+@jwt_required
+def stop_music():
+    simpleaudio.stop_all()
+    return make_response(jsonify({'message':'music_stopped'}))

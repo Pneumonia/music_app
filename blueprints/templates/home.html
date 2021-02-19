@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script type="text/javascript" src="{{ url_for('static', filename='app.js') }}"></script>
+    </head>
+<body>
+    <p id="message"></p>
+    <hr>
+<h1>HOME</h1>
+<form id="auth" class="auth">
+    <div>        
+        <button class="login">login</button>
+        <button class="logout">logout</button>
+    </div>
+    </form>
+<hr>
+<input type="file" id="upload_music">
+<button class="upload_music" for="upload_music" onclick="upload_file()">upload</button>
+<hr>
+<form id="add_music">
+    <div>
+    <button class="add_music">add music</button>
+    <hr>
+
+    </div>
+</form>
+<p>now_playing: <span id="now_playing" >None</span> <button onclick="stop_music()">STOP</button></p>
+<div id="music_list">
+    <ul>
+    </ul>
+</div>
+<hr>
+<form id="users">
+    <button class="get_all_users">USER</button>
+<div id="users_list">
+    <ul></ul>
+</div>
+<hr>
+<button class="make_user">make_user</button>
+</form>
+<hr>
+</body>
+</html>
