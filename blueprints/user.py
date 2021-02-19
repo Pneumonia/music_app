@@ -1,4 +1,4 @@
-from flask import Flask, Blueprint, render_template, jsonify, request
+from flask import Flask, Blueprint, render_template, jsonify, request, make_response
 from flask_jwt_extended import jwt_required,get_jwt_identity, get_csrf_token
 
 
@@ -7,8 +7,5 @@ user = Blueprint("user",__name__)
 
 @user.route("/")
 def home():
-    return render_template("home.html")
+    return make_response(render_template("home.html"),200)
 
-@user.route("/login_html")
-def login():
-    return render_template("login.html")
