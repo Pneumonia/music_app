@@ -59,11 +59,11 @@ def play_on_host(music):
     music = Music.query.filter_by(title=music.split(".")[0]).first()
     if not music:
         return jsonify({'msg': 'data is empty'})
-    simpleaudio.stop_all()
     try:
         print("before try")
         music = AudioSegment.from_file(music.link)
         print("muisc_found")
+        simpleaudio.stop_all()
         simpleaudio.play_buffer(music.raw_data,num_channels=music.channels,bytes_per_sample=music.sample_width,sample_rate=music.frame_rate)
         print("simple:audio")
         return jsonify({'msg': 'music is playing'})
