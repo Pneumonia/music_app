@@ -402,6 +402,7 @@ result = JSON.parse(result)
 result = result.music_info;
 return result
 }//end get_music
+
 //play_on_host
 async function play_on_host(value){
   jwt_token = localStorage.getItem('jwt_token');
@@ -530,16 +531,13 @@ fetch(http_ip+"/user",requestOptions)
 .catch(error =>  document.getElementById("msg").innerHTML= error);
   return true;
 }//end make_user
+
 //play on lokal
 async function play_on_local_function(title){ //title über onclick
 jwt_token = localStorage.getItem('jwt_token');
-
 var myHeaders = new Headers();
 myHeaders.append("Authorization", "Bearer "+jwt_token);
-
 var requestOptions = {method: 'GET',headers: myHeaders,redirect: 'follow'};//ohne body?
-
-
 fetch(http_ip+"/static/music/" + title, requestOptions)
   .then(response => response.arrayBuffer())
   .then(result => {

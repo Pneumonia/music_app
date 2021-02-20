@@ -55,18 +55,17 @@ def play_on_lokal(music):
 @music.route('/static/music/<music>', methods=["POST"])
 @jwt_required
 def play_on_host(music):
-    test = request.headers
-    current_user = get_jwt_identity()
-    current_user = User.query.filter_by(public_id=current_user).first()
-    simpleaudio.stop_all()
-    music_refresh(current_user)
+    print("play on host")
     music = Music.query.filter_by(title=music.split(".")[0]).first()
     if not music:
         return jsonify({'msg': 'data is empty'})
     simpleaudio.stop_all()
     try:
+        print("before try")
         music = AudioSegment.from_file(music.link)
+        print("muisc_found")
         simpleaudio.play_buffer(music.raw_data,num_channels=music.channels,bytes_per_sample=music.sample_width,sample_rate=music.frame_rate)
+        print("simple:audio")
         return jsonify({'msg': 'music is playing'})
     except:
         return jsonify({'msg', 'error'})
@@ -78,6 +77,7 @@ def play_on_host(music):
 def upload_music():
     current_user = get_jwt_identity()
     current_user = User.query.filter_by(public_id=current_user).first()
+    music_refresh(current_user)
     if request.method != "POST":
         return jsonify({'msg': 'failed'})
     if not request.files['music']:
@@ -114,6 +114,9 @@ def delete_music(music):
 @jwt_required
 def get_music():
     make_response(jsonify({'msg':'make_response'}))
+    current_user = get_jwt_identity()
+    current_user = User.query.filter_by(public_id=current_user).first()
+    music_refresh(current_user)
     music = Music.query.all()
     music_info = []
     for m in music:
