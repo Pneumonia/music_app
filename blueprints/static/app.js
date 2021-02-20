@@ -379,6 +379,9 @@ if(response=="delete"){
 
 })//end DOM system
 //__function____function____function____function____function____function____function____function____function____function__
+
+const http_ip="http://192.168.2.220"
+
 //get_music
 async function get_music(){
     jwt_token = localStorage.getItem('jwt_token')
@@ -391,7 +394,7 @@ async function get_music(){
 myHeaders.append("Authorization", "Bearer " +jwt_token);
 
 var requestOptions = {method: 'POST',headers: myHeaders,redirect: 'follow',};
-const response = await fetch("http://192.168.2.220/get_music", requestOptions)
+const response = await fetch(http_ip+"/get_music", requestOptions)
 let result =await response.text();
 console.log(result)
 document.getElementById("msg").innerHTML=result;
@@ -405,7 +408,7 @@ async function play_on_host(value){
   var myHeaders = new Headers();
   myHeaders.append("Authorization","Bearer "+jwt_token);
   var requestOptions = {method:'POST',headers: myHeaders,redirect:'follow',};
-  fetch("http://192.168.2.220/static/music/"+value,requestOptions)
+  fetch(http_ip+"/static/music/"+value,requestOptions)
   .then(response => response.text())
   .then(result => {document.getElementById("now_playing").innerHTML=value;
   document.getElementById("msg").innerHTML=result;})
@@ -426,7 +429,7 @@ async function login_function(){
   myHeaders.append("Authorization", "Basic " +code);
   var requestOptions = {method: 'GET',headers: myHeaders,redirect: 'follow'};
   //login API
-  const response = await fetch('http://192.168.2.220/login', requestOptions)
+  const response = await fetch(http_ip+"/login", requestOptions)
   //jwt from response
   const result =await response.text();
   if(!result || result=="no login"){
@@ -451,7 +454,7 @@ async function logout_function(){
 
   var requestOptions = {method: 'DELETE',headers: myHeaders,redirect: 'follow',};
   
-  fetch("http://192.168.2.220/logout", requestOptions)
+  fetch(http_ip+"/logout", requestOptions)
     .then(response => response.text())
     .then(result => {
       console.log(result);
@@ -468,7 +471,7 @@ myHeaders.append("Authorization", "Bearer "+jwt_token);
 
 var requestOptions = {method: 'POST',headers: myHeaders,redirect: 'follow'};
 
-fetch("http://192.168.2.220/stop_music", requestOptions)
+fetch(http_ip+"/stop_music", requestOptions)
   .then(response => response.text())
   .then(result => {document.getElementById("now_playing").innerHTML = "NONE";
                   document.getElementById("msg").innerHTML=result;
@@ -480,7 +483,7 @@ async function get_all_users(){
   var myHeaders = new Headers();
 myHeaders.append("Authorization", "Bearer "+jwt_token);
 var requestOptions = {method: 'GET',headers: myHeaders,redirect: 'follow'};
-const response =await fetch("http://192.168.2.220/users", requestOptions);
+const response =await fetch(http_ip+"/users", requestOptions);
 let result = await response.json(); //macht json in txt
 document.getElementById("msg").innerHTML= result['msg'];
 return result;
@@ -497,7 +500,7 @@ async function upload_file(){
   myFormadata.append("music",file,file.name);
 
   var requestOptions = {method:'POST',headers:myHeaders,body:myFormadata ,redirect:'follow'};
-  fetch("http://192.168.2.220/upload_music",requestOptions)
+  fetch(http_ip+"/upload_music",requestOptions)
   .then(response=>response.text())
   .then(result=>{
     document.getElementById("msg").innerHTML = result;
@@ -521,7 +524,7 @@ async function make_user_function(){
   myHeaders.append("Content-Type", "application/json");
   var raw =JSON.stringify({"email":email,"password":password1,"name":username});
   var requestOptions={method:'POST',headers:myHeaders,body:raw,redirect:'follow'};
-fetch("http://192.168.2.220/user",requestOptions)
+fetch(http_ip+"/user",requestOptions)
 .then(response=>response.text())
 .then(result=>{document.getElementById("msg").innerHTML= result;})
 .catch(error =>  document.getElementById("msg").innerHTML= error);
@@ -537,7 +540,7 @@ myHeaders.append("Authorization", "Bearer "+jwt_token);
 var requestOptions = {method: 'GET',headers: myHeaders,redirect: 'follow'};//ohne body?
 
 
-fetch("http://192.168.2.220/static/music/" + title, requestOptions)
+fetch(http_ip+"/static/music/" + title, requestOptions)
   .then(response => response.arrayBuffer())
   .then(result => {
     document.getElementById("msg").innerHTML = result;
@@ -578,7 +581,7 @@ myHeaders.append("Authorization", "Bearer "+jwt_token);
 
 var requestOptions = {method: 'DELETE',headers: myHeaders,redirect: 'follow',};
 
-fetch("http://192.168.2.220/static/music/"+title, requestOptions)
+fetch(http_ip+"/static/music/"+title, requestOptions)
   .then(response => response.text())
   .then(result => document.getElementById("msg").innerHTML=result)
   .catch(error => document.getElementById("msg").innerHTML=error);
@@ -592,7 +595,7 @@ myHeaders.append("Authorization","Bearer "+jwt_token);
 var requestOptions = {method:"PUT",headers:myHeaders,redirect:'follow',};
 
 console.log(public_id);
-const response = await fetch("http://192.168.2.220/user/"+public_id,requestOptions);
+const response = await fetch(http_ip+"/user/"+public_id,requestOptions);
 let result = await response.json();
 console.log(result);
 document.getElementById("msg").innerHTML=result;
@@ -606,7 +609,7 @@ console.log(public_id);
 var myHeaders = new Headers();
 myHeaders.append("Authorization","Bearer "+jwt_token);
 var requestOptions={method:'DELETE',headers:myHeaders,redirect:'follow'};
-const response = await fetch("http://192.168.2.220/user/"+public_id,requestOptions);
+const response = await fetch(http_ip+"/user/"+public_id,requestOptions);
 const result = await response.json();
 console.log(result);
 document.getElementById("msg").innerHTML=result;
@@ -619,7 +622,7 @@ async function get_current_user_function(){
   myHeaders.append("Authorization", "Bearer "+ jwt_token);
   
   var requestOptions = {method: 'GET',headers: myHeaders,redirect: 'follow'};
-  const response = await fetch("http://192.168.2.220/user", requestOptions)
+  const response = await fetch(http_ip+"/user", requestOptions)
   const result = await response.json();
   document.getElementById("msg").innerHTML=result['msg'];
   if(result['msg']==false){
