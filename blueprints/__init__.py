@@ -1,9 +1,9 @@
-from flask import Flask, request, jsonify
+from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from os import urandom, path
-from flask_jwt_extended import (JWTManager, jwt_required, get_jwt_identity,create_access_token, create_refresh_token,jwt_refresh_token_required, get_raw_jwt,decode_token
-)
-from functools import wraps
+from flask_jwt_extended import JWTManager
+import os
+
 
 db = SQLAlchemy()
 DB_NAME = "database.db"
@@ -15,13 +15,13 @@ def create_app():
 
     app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{DB_NAME}"
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['MUSIC_UPLOAD']='/home/bert/PycharmProjects/flask/music_app_02/blueprints/static/music/'
+    pfad = os.getcwd()
+    app.config['MUSIC_UPLOAD']=pfad+'/blueprints/static/music/'
     app.config['UPLOAD_EXTENSIONS'] = ["MP3", "AAC", "M4A", "WMA", "FLAC", "ALAC", "WAV", "AIFF", "PCM", "OGG"]
     app.config['MAX_CONTENT_LENGTH'] = 20 * 1024 * 1024
     app.config['JWT_BLACKLIST_ENABLED'] = True
     app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
     #app.config['JWT_TOKEN_LOCATION'] = ['cookies']
-    #app.config['JWT_COOKIE_SECURE'] = False
 
     jwt = JWTManager(app)
 

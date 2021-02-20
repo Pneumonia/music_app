@@ -1,14 +1,11 @@
-from flask import Flask, Blueprint, jsonify, request, current_app, make_response, render_template, redirect, url_for
+from flask import  Blueprint, jsonify, request, current_app, make_response, render_template, redirect, url_for
 from . import db
 from .models import User
-from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
 import uuid
-from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity, create_access_token, create_refresh_token, \
-    jwt_refresh_token_required, get_raw_jwt, decode_token, set_refresh_cookies, set_access_cookies, unset_jwt_cookies, \
-    get_csrf_token, jwt_optional
-from .__init__ import create_app
+from flask_jwt_extended import jwt_required, get_jwt_identity, create_access_token, get_raw_jwt
+
 
 account_manage = Blueprint("account_manage", __name__)
 
@@ -18,9 +15,8 @@ account_manage = Blueprint("account_manage", __name__)
 def logout():
     current_user = get_jwt_identity()
     current_user = User.query.filter_by(public_id=current_user).first()
-    jti = get_raw_jwt()['jti']
+    jti = get_raw_jwt()['jti']#nicht mehr in 4.02
     current_app.blacklist.add(jti)
-    ret = jsonify({'logout': True})
     return jsonify({"msg": "Successfully logged out, byby " + current_user.name}), 200
 
 

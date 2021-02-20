@@ -3,11 +3,9 @@
 blueprints/static/music/
 *.mp3
 *.m4a
-*.db
 *.pyc
 
  *.mp3
  *.m4a
- *.db
  *.pyc
 
